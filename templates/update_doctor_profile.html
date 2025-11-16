@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-user-edit"></i> Update Doctor Profile</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" onsubmit="return validateDoctorProfileForm()">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-control" value="Dr. {{ doctor.name }}" disabled>
+                            <small class="text-muted">Name cannot be changed</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Doctor ID</label>
+                            <input type="text" class="form-control" value="#{{ doctor.id }}" disabled>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Specialization</label>
+                            <input type="text" class="form-control" value="{{ doctor.specialization }}" disabled>
+                            <small class="text-muted">Specialization cannot be changed</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Department</label>
+                            <input type="text" class="form-control" value="{{ doctor.department.name }}" disabled>
+                            <small class="text-muted">Department cannot be changed</small>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="gender" class="form-label">Gender <span class="text-danger">*</span></label>
+                            <select class="form-select" id="gender" name="gender" required>
+                                <option value="">Select Gender</option>
+                                <option value="Male" {% if doctor.gender == 'Male' %}selected{% endif %}>Male</option>
+                                <option value="Female" {% if doctor.gender == 'Female' %}selected{% endif %}>Female</option>
+                                <option value="Other" {% if doctor.gender == 'Other' %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="phone" class="form-label">Phone Number <span class="text-danger">*</span></label>
+                            <input type="tel" class="form-control" id="phone" name="phone" 
+                                   value="{{ doctor.phone if doctor.phone else '' }}" 
+                                   placeholder="Enter phone number" required pattern="[0-9]{10,15}">
+                            <small class="text-muted">Enter 10-15 digits</small>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> <strong>Note:</strong> Only gender and phone number can be updated. For other changes, please contact the administrator.
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('doctor_dashboard') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Update Profile
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function validateDoctorProfileForm() {
+    const phone = document.getElementById('phone').value;
+    const gender = document.getElementById('gender').value;
+    
+    if (!gender) {
+        alert('Please select your gender');
+        return false;
+    }
+    
+    if (!phone || phone.length < 10 || phone.length > 15) {
+        alert('Please enter a valid phone number (10-15 digits)');
+        return false;
+    }
+    
+    if (!/^[0-9]+$/.test(phone)) {
+        alert('Phone number should contain only digits');
+        return false;
+    }
+    
+    return confirm('Are you sure you want to update your profile?');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"> Medical Report</h4>
+                        <button onclick="window.print()" class="btn btn-light">
+                            <i class="fas fa-print"></i> Print
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body" id="printableArea">
+                    <!-- Appointment Details -->
+                    <div class="record-section">
+                        <h5 class="section-title"><i class="fas fa-calendar-check"></i> Appointment Information</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Appointment ID:</strong> #{{ appointment.id }}</p>
+                                <p><strong>Date:</strong> {{ appointment.appointment_date.strftime('%B %d, %Y') }}</p>
+                                <p><strong>Time:</strong> {{ appointment.time_slot }} ({{ appointment.period }})</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Status:</strong> 
+                                    <span class="badge bg-secondary">{{ appointment.status }}</span>
+                                </p>
+                                <p><strong>Doctor:</strong> Dr. {{ doctor.name }}</p>
+                                <p><strong>Specialization:</strong> {{ doctor.specialization }}</p>
+                                <p><strong>Consultation Fee:</strong> <span class="text-success fw-bold">₹{{ doctor.fees|int }}</span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Patient Details -->
+                    <div class="record-section">
+                        <h5 class="section-title"><i class="fas fa-user"></i> Patient Information</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Name:</strong> {{ appointment.patient.name }}</p>
+                                <p><strong>Patient ID:</strong> #{{ appointment.patient.id }}</p>
+                                <p><strong>Date of Birth:</strong> {{ appointment.patient.dob.strftime('%B %d, %Y') if appointment.patient.dob else 'N/A' }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Gender:</strong> {{ appointment.patient.gender or 'N/A' }}</p>
+                                <p><strong>Phone:</strong> {{ appointment.patient.phone or 'N/A' }}</p>
+                                <p><strong>Email:</strong> {{ appointment.patient.user.email if appointment.patient.user else 'N/A' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Medical Report Details -->
+                    <div class="record-section">
+                        <h5 class="section-title"><i class="fas fa-stethoscope"></i> Diagnosis</h5>
+                        <div class="record-content">
+                            {{ record.diagnosis }}
+                        </div>
+                    </div>
+
+                    <div class="record-section">
+                        <h5 class="section-title"><i class="fas fa-prescription"></i> Prescription</h5>
+                        <div class="record-content">
+                            {{ record.prescription }}
+                        </div>
+                    </div>
+
+                    {% if record.notes %}
+                    <div class="record-section">
+                        <h5 class="section-title"><i class="fas fa-notes-medical"></i> Additional Notes</h5>
+                        <div class="record-content">
+                            {{ record.notes }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <hr>
+
+                    <div class="text-muted small">
+                        <p class="mb-0"><strong>Record ID:</strong> #{{ record.id }}</p>
+                    </div>
+                </div>
+                <div class="card-footer no-print">
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('doctor_appointments') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Appointments
+                        </a>
+                        <a href="{{ url_for('doctor_medical_records') }}" class="btn btn-info">
+                            <i class="fas fa-file-medical"></i> All Medical Reports
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem;
+}
+
+.record-section {
+    margin-bottom: 2rem;
+}
+
+.section-title {
+    color: #667eea;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.record-content {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+    white-space: pre-wrap;
+    line-height: 1.6;
+}
+
+.record-section p {
+    margin-bottom: 0.5rem;
+}
+
+@media print {
+    .no-print, .btn, button {
+        display: none !important;
+    }
+    
+    .card {
+        box-shadow: none;
+        border: none;
+    }
+    
+    body {
+        background: white;
+    }
+    
+    .card-header {
+        background: white !important;
+        color: black !important;
+        border-bottom: 2px solid #000;
+    }
+}
+</style>
+{% endblock %}

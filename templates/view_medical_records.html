@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Your Medical Reports</h2>
+    
+    {% if records %}
+    <div class="row">
+        {% for record in records %}
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-medical"></i> Record #{{ record.id }} - 
+                        Appointment with Dr. {{ record.appointment.doctor.name }}
+                    </h5>
+                    <small>Consultation Fee: ₹{{ record.appointment.doctor.fees|int }}</small>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-stethoscope"></i> Diagnosis</h6>
+                            <p class="card-text">{{ record.diagnosis }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-prescription-bottle"></i> Prescription</h6>
+                            <p class="card-text">{{ record.prescription }}</p>
+                        </div>
+                    </div>
+                    {% if record.notes %}
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h6><i class="fas fa-notes-medical"></i> Additional Notes</h6>
+                            <p class="card-text">{{ record.notes }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer text-muted">
+                    <small>Appointment Date: {{ record.appointment.appointment_date.strftime('%B %d, %Y') }} at {{ record.appointment.time_slot }}</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> You don't have any medical reports yet.
+    </div>
+    {% endif %}
+    
+    <a href="{{ url_for('patient_dashboard') }}" class="btn btn-secondary mt-3">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+{% endblock %}

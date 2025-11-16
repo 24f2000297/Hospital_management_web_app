@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"> Medical Reports</h4>
+                <a href="{{ url_for('doctor_dashboard') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if records %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Record ID</th>
+                            <th>Patient Name</th>
+                            <th>Appointment Date</th>
+                            <th>Time</th>
+                            <th>Diagnosis</th>
+                            <th>Prescription</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in records %}
+                        <tr>
+                            <td><strong>#{{ record.id }}</strong></td>
+                            <td>{{ record.patient.name }}</td>
+                            <td>{{ record.appointment.appointment_date.strftime('%b %d, %Y') }}</td>
+                            <td><code>{{ record.appointment.time_slot }}</code></td>
+                            <td>{{ record.diagnosis[:50] }}{% if record.diagnosis|length > 50 %}...{% endif %}</td>
+                            <td>{{ record.prescription[:50] }}{% if record.prescription|length > 50 %}...{% endif %}</td>
+                            <td>
+                                <a href="{{ url_for('view_medical_record', appointment_id=record.appointment_id) }}" class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Records Cards View (Alternative) -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h5 class="mb-3">Recent Records Overview</h5>
+                </div>
+                {% for record in records[:5] %}
+                <div class="col-md-12 mb-3">
+                    <div class="card record-card">
+                        <div class="card-header bg-success text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-file-medical"></i> Record #{{ record.id }} - {{ record.patient.name }}
+                                </h6>
+                                <small>{{ record.appointment.appointment_date.strftime('%B %d, %Y') }}</small>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-stethoscope"></i> Diagnosis</h6>
+                                    <p class="text-muted">{{ record.diagnosis[:100] }}{% if record.diagnosis|length > 100 %}...{% endif %}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-prescription"></i> Prescription</h6>
+                                    <p class="text-muted">{{ record.prescription[:100] }}{% if record.prescription|length > 100 %}...{% endif %}</p>
+                                </div>
+                            </div>
+                            {% if record.notes %}
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <h6><i class="fas fa-notes-medical"></i> Notes</h6>
+                                    <p class="text-muted">{{ record.notes[:100] }}{% if record.notes|length > 100 %}...{% endif %}</p>
+                                </div>
+                            </div>
+                            {% endif %}
+                            <div class="mt-2">
+                                <a href="{{ url_for('view_medical_record', appointment_id=record.appointment_id) }}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-eye"></i> View Full Record
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> No medical reports found. Reports will appear here after you add them for completed appointments.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.record-card {
+    border-left: 4px solid #28a745;
+    transition: transform 0.2s;
+}
+
+.record-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.table code {
+    background-color: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+.card-header.bg-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="dashboard-header">
+    <h2> Doctor Dashboard</h2>
+    <p class="mb-0">Welcome, Dr. {{ doctor.name }}!</p>
+    <small class="text-white">{{ doctor.specialization }} | {{ doctor.department.name }}</small>
+</div>
+
+<!-- Statistics Overview -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="stat-card">
+            <h3>{{ doctor.appointments|length }}</h3>
+            <p> Total Appointments</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="stat-card">
+            <h3>{{ today_appointments|length if today_appointments else 0 }}</h3>
+            <p> Today's Appointments</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="stat-card">
+            <h3>{{ upcoming_appointments|length if upcoming_appointments else 0 }}</h3>
+            <p> Upcoming Appointments</p>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-4">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <h3 class="mb-3"></h3>
+                <h5 class="card-title">My Appointments</h5>
+                <p class="card-text">View and manage your scheduled appointments with patients</p>
+                <a href="{{ url_for('doctor_appointments') }}" class="btn btn-primary mt-2">
+                    View Appointments
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <h3 class="mb-3"></h3>
+                <h5 class="card-title">My Patients</h5>
+                <p class="card-text">View list of patients you have consulted or treated</p>
+                <a href="{{ url_for('doctor_patients') }}" class="btn btn-success mt-2">
+                    View Patients
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <h3 class="mb-3"></h3>
+                <h5 class="card-title">Medical Reports</h5>
+                <p class="card-text">Create and manage patient medical reports and prescriptions</p>
+                <a href="{{ url_for('doctor_medical_records') }}" class="btn btn-info mt-2">
+                    Manage Records
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Security Settings -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5> Profile Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Name:</strong> Dr. {{ doctor.name }}</p>
+                <p><strong>Specialization:</strong> {{ doctor.specialization }}</p>
+                <p><strong>Department:</strong> {{ doctor.department.name }}</p>
+                <p><strong>Consultation Fee:</strong> <span class="text-success">₹{{ doctor.fees|int }}</span></p>
+                <p><strong>Gender:</strong> {{ doctor.gender if doctor.gender else 'Not specified' }}</p>
+                <p><strong>Phone:</strong> {{ doctor.phone if doctor.phone else 'Not specified' }}</p>
+                <p class="mb-0"><strong>Doctor ID:</strong> #{{ doctor.id }}</p>
+                <div class="mt-3">
+                    <a href="{{ url_for('update_doctor_profile') }}" class="btn btn-primary">
+                        <i class="fas fa-user-edit"></i> Update Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5> Security Settings</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-column justify-content-between h-100">
+                    <div>
+                        <h6 class="mb-1">Change Password</h6>
+                        <p class="text-muted mb-3">Update your account password to keep your account secure</p>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('change_password') }}" class="btn btn-warning">
+                            <i class="fas fa-key"></i> Change Password
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Today's Appointments -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5> Today's Appointments</h5>
+            </div>
+            <div class="card-body">
+                {% if today_appointments %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Patient Name</th>
+                                <th>Contact</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appointment in today_appointments %}
+                            <tr>
+                                <td><strong>{{ appointment.time_slot }}</strong></td>
+                                <td>{{ appointment.patient.name }}</td>
+                                <td>{{ appointment.patient.phone }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if appointment.status == 'Scheduled' else 'secondary' }}">
+                                        {{ appointment.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('doctor_appointments') }}" class="btn btn-sm btn-primary">View</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info mb-0">
+                    <i class="fas fa-info-circle"></i> No appointments scheduled for today.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upcoming Appointments -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5> Upcoming Appointments</h5>
+            </div>
+            <div class="card-body">
+                {% if upcoming_appointments %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Patient Name</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appointment in upcoming_appointments[:5] %}
+                            <tr>
+                                <td>{{ appointment.appointment_date.strftime('%B %d, %Y') }}</td>
+                                <td>{{ appointment.time_slot }}</td>
+                                <td>{{ appointment.patient.name }}</td>
+                                <td>
+                                    <span class="badge bg-info">{{ appointment.status }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <a href="{{ url_for('doctor_appointments') }}" class="btn btn-sm btn-outline-primary mt-2">
+                    View All Appointments →
+                </a>
+                {% else %}
+                <p class="text-muted mb-0">No upcoming appointments.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

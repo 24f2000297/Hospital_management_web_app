@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Book an Appointment</h2>
+    
+    <form method="POST" id="appointmentForm">
+        {{ form.hidden_tag() }}
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Step 1: Select a Doctor</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for doctor in doctors %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Dr. {{ doctor.name }}</h5>
+                                <p class="card-text">
+                                    <strong>Specialization:</strong> {{ doctor.specialization }}<br>
+                                    <strong>Department:</strong> {{ doctor.department.name }}<br>
+                                    <strong>Consultation Fee:</strong> <span class="text-success fw-bold">₹{{ doctor.fees|int }}</span>
+                                </p>
+                                <button type="button" class="btn btn-primary" 
+                                        onclick="selectDoctor({{ doctor.id }}, '{{ doctor.name }}', {{ doctor.fees }})">
+                                    Select Doctor
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4" id="dateSelection" style="display: none;">
+            <div class="card-header">
+                <h5>Step 2: Select Date and Time</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label for="appointmentDate" class="form-label">Select Date:</label>
+                        <input type="date" class="form-control" id="appointmentDate" name="appointment_date" 
+                               min="{{ min_date }}" max="{{ max_date }}" required>
+                        <small class="text-muted">You can book appointments for the next 7 days</small>
+                    </div>
+                </div>
+                
+                <div class="mt-4" id="timeSlotsSection" style="display: none;">
+                    <h6>Select a Time Slot:</h6>
+                    <div class="row" id="timeSlots">
+                        <!-- Time slots will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4" id="appointmentSummary" style="display: none;">
+            <div class="card-header">
+                <h5>Step 3: Confirm Your Appointment</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h6>Appointment Details:</h6>
+                        <p>
+                            <strong>Doctor:</strong> <span id="summaryDoctor"></span><br>
+                            <strong>Date:</strong> <span id="summaryDate"></span><br>
+                            <strong>Time:</strong> <span id="summaryTime"></span><br>
+                            <strong>Consultation Fee:</strong> <span id="summaryFee" class="text-success fw-bold"></span>
+                        </p>
+                        <button type="submit" class="btn btn-success btn-lg" id="submitBtn" style="display: none;">
+                            Confirm Appointment
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <input type="hidden" name="doctor_id" id="doctorId">
+        <input type="hidden" name="doctor_name" id="doctorName">
+        <input type="hidden" name="time_slot" id="timeSlot">
+    </form>
+</div>
+
+<script>
+let selectedTimeSlot = null;
+let selectedDoctorName = '';
+let selectedDoctorFees = 0;
+
+function selectDoctor(doctorId, doctorName, doctorFees) {
+    document.getElementById('doctorId').value = doctorId;
+    document.getElementById('doctorName').value = doctorName;
+    selectedDoctorName = doctorName;
+    selectedDoctorFees = doctorFees;
+    document.getElementById('dateSelection').style.display = 'block';
+    document.getElementById('appointmentSummary').style.display = 'none';
+    document.getElementById('submitBtn').style.display = 'none';
+    document.getElementById('timeSlotsSection').style.display = 'none';
+    
+    // Reset selections
+    selectedTimeSlot = null;
+    document.getElementById('timeSlot').value = '';
+    document.getElementById('appointmentDate').value = '';
+    
+    // Scroll to date selection
+    document.getElementById('dateSelection').scrollIntoView({ behavior: 'smooth' });
+}
+
+document.getElementById('appointmentDate').addEventListener('change', function() {
+    const date = this.value;
+    const doctorId = document.getElementById('doctorId').value;
+    
+    if (!date || !doctorId) return;
+
+    document.getElementById('timeSlotsSection').style.display = 'block';
+    
+    // Fetch available time slots from the server
+    fetch(`/get_available_slots/${doctorId}/${date}`)
+        .then(response => response.json())
+        .then(data => {
+            const timeSlotsDiv = document.getElementById('timeSlots');
+            timeSlotsDiv.innerHTML = '';
+            
+            const periods = [
+                { name: 'Morning (9:00 AM - 11:30 AM)', slots: data.morning },
+                { name: 'Afternoon (1:00 PM - 4:30 PM)', slots: data.afternoon },
+                { name: 'Evening (5:00 PM - 7:30 PM)', slots: data.evening }
+            ];
+            
+            periods.forEach(period => {
+                const periodDiv = document.createElement('div');
+                periodDiv.className = 'col-md-4 mb-4';
+                periodDiv.innerHTML = `
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">${period.name}</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-group list-group-flush">
+                                ${period.slots && period.slots.length ? 
+                                    period.slots.map(slot => `
+                                        <button type="button" 
+                                            class="list-group-item list-group-item-action time-slot" 
+                                            onclick="selectTimeSlot('${slot}')">
+                                            ${formatTime(slot)}
+                                        </button>
+                                    `).join('') : 
+                                    '<div class="list-group-item text-muted">No available slots</div>'
+                                }
+                            </div>
+                        </div>
+                    </div>
+                `;
+                timeSlotsDiv.appendChild(periodDiv);
+            });
+
+            // Scroll to time slots
+            document.getElementById('timeSlotsSection').scrollIntoView({ behavior: 'smooth' });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error loading time slots. Please try again.');
+        });
+});
+
+function formatTime(time) {
+    // Convert 24-hour format to 12-hour format
+    const [hours, minutes] = time.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
+}
+
+function selectTimeSlot(slot) {
+    // Remove active class from all slots
+    document.querySelectorAll('.time-slot').forEach(el => {
+        el.classList.remove('active');
+    });
+    
+    // Add active class to selected slot if it's a button
+    if (event.target.classList.contains('time-slot')) {
+        event.target.classList.add('active');
+        
+        // Store selected slot
+        selectedTimeSlot = slot;
+        document.getElementById('timeSlot').value = slot;
+        
+        // Update summary
+        const dateObj = new Date(document.getElementById('appointmentDate').value);
+        const formattedDate = dateObj.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+        
+        document.getElementById('summaryDoctor').textContent = `Dr. ${selectedDoctorName}`;
+        document.getElementById('summaryDate').textContent = formattedDate;
+        document.getElementById('summaryTime').textContent = formatTime(slot);
+        document.getElementById('summaryFee').textContent = `₹${Math.floor(selectedDoctorFees)}`;
+        
+        // Show summary card and submit button
+        document.getElementById('appointmentSummary').style.display = 'block';
+        document.getElementById('submitBtn').style.display = 'block';
+        
+        // Scroll to summary
+        document.getElementById('appointmentSummary').scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
+// Prevent form submission if required fields are not filled
+document.getElementById('appointmentForm').addEventListener('submit', function(event) {
+    const doctorId = document.getElementById('doctorId').value;
+    const appointmentDate = document.getElementById('appointmentDate').value;
+    const timeSlot = document.getElementById('timeSlot').value;
+    
+    if (!doctorId || !appointmentDate || !timeSlot) {
+        event.preventDefault();
+        alert('Please complete all steps before confirming the appointment.');
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"> My Patients</h4>
+                <a href="{{ url_for('doctor_dashboard') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if patients %}
+            <div class="row">
+                {% for patient in patients %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="fas fa-user"></i> {{ patient.name }}</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="patient-info">
+                                <p class="mb-2"><strong>Date of Birth:</strong> {{ patient.dob.strftime('%B %d, %Y') if patient.dob else 'N/A' }}</p>
+                                <p class="mb-2"><strong>Gender:</strong> 
+                                    <span class="badge {% if patient.gender and patient.gender.lower() == 'male' %}bg-primary{% elif patient.gender and patient.gender.lower() == 'female' %}bg-pink{% else %}bg-secondary{% endif %}">
+                                        {{ patient.gender or 'N/A' }}
+                                    </span>
+                                </p>
+                                <p class="mb-2"><strong>Phone:</strong> {{ patient.phone or 'N/A' }}</p>
+                                <p class="mb-2"><strong>Email:</strong> {{ patient.user.email if patient.user else 'N/A' }}</p>
+                                {% if patient.address %}
+                                <p class="mb-2"><strong>Address:</strong> {{ patient.address }}</p>
+                                {% endif %}
+                            </div>
+                            <hr>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-info" onclick="viewPatientDetails({{ patient.id }}, '{{ patient.name }}', '{{ patient.dob.strftime('%B %d, %Y') if patient.dob else 'N/A' }}', '{{ patient.gender or 'N/A' }}', '{{ patient.phone or 'N/A' }}', '{{ patient.user.email if patient.user else 'N/A' }}')">
+                                    <i class="fas fa-eye"></i> View Details
+                                </button>
+                                <button class="btn btn-sm btn-success" onclick="viewPatientAppointments({{ patient.id }}, '{{ patient.name }}')">
+                                    <i class="fas fa-calendar"></i> Appointments
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> You haven't seen any patients yet.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- View Patient Details Modal -->
+<div class="modal fade" id="patientDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Patient Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-4"><strong>Patient ID:</strong></div>
+                    <div class="col-8" id="patientId"></div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-4"><strong>Name:</strong></div>
+                    <div class="col-8" id="patientName"></div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-4"><strong>Date of Birth:</strong></div>
+                    <div class="col-8" id="patientDOB"></div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-4"><strong>Gender:</strong></div>
+                    <div class="col-8" id="patientGender"></div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-4"><strong>Phone:</strong></div>
+                    <div class="col-8" id="patientPhone"></div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-4"><strong>Email:</strong></div>
+                    <div class="col-8" id="patientEmail"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Patient Appointments Modal -->
+<div class="modal fade" id="patientAppointmentsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="appointmentsModalTitle">Patient Appointments</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted">This feature will show appointment history for the selected patient.</p>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Appointment history functionality coming soon!
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewPatientDetails(id, name, dob, gender, phone, email) {
+    document.getElementById('patientId').textContent = '#' + id;
+    document.getElementById('patientName').textContent = name;
+    document.getElementById('patientDOB').textContent = dob;
+    document.getElementById('patientGender').textContent = gender;
+    document.getElementById('patientPhone').textContent = phone;
+    document.getElementById('patientEmail').textContent = email;
+    
+    var modal = new bootstrap.Modal(document.getElementById('patientDetailsModal'));
+    modal.show();
+}
+
+function viewPatientAppointments(id, name) {
+    document.getElementById('appointmentsModalTitle').textContent = 'Appointments - ' + name;
+    
+    var modal = new bootstrap.Modal(document.getElementById('patientAppointmentsModal'));
+    modal.show();
+}
+</script>
+
+<style>
+.bg-pink {
+    background-color: #e91e63 !important;
+}
+
+.patient-info p {
+    line-height: 1.8;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0"> Add Medical Report</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Appointment Details -->
+                    <div class="alert alert-info">
+                        <h5 class="alert-heading"><i class="fas fa-info-circle"></i> Appointment Information</h5>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Patient:</strong> {{ appointment.patient.name }}</p>
+                                <p class="mb-1"><strong>Date:</strong> {{ appointment.appointment_date.strftime('%B %d, %Y') }}</p>
+                                <p class="mb-0"><strong>Time:</strong> {{ appointment.time_slot }} ({{ appointment.period }})</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Patient DOB:</strong> {{ appointment.patient.dob.strftime('%b %d, %Y') if appointment.patient.dob else 'N/A' }}</p>
+                                <p class="mb-1"><strong>Gender:</strong> {{ appointment.patient.gender or 'N/A' }}</p>
+                                <p class="mb-0"><strong>Phone:</strong> {{ appointment.patient.phone or 'N/A' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Medical Report Form -->
+                    <form method="POST" id="medicalRecordForm">
+                        <div class="mb-4">
+                            <label for="diagnosis" class="form-label">
+                                <i class="fas fa-stethoscope"></i> Diagnosis <span class="text-danger">*</span>
+                            </label>
+                            <textarea class="form-control" id="diagnosis" name="diagnosis" rows="4" required 
+                                placeholder="Enter patient's diagnosis, symptoms, and findings..."></textarea>
+                            <small class="text-muted">Describe the patient's condition, symptoms observed, and your medical findings.</small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="prescription" class="form-label">
+                                <i class="fas fa-prescription"></i> Prescription <span class="text-danger">*</span>
+                            </label>
+                            <textarea class="form-control" id="prescription" name="prescription" rows="5" required 
+                                placeholder="Enter prescribed medications, dosage, and instructions..."></textarea>
+                            <small class="text-muted">List all prescribed medications with dosage, frequency, and duration.</small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="notes" class="form-label">
+                                <i class="fas fa-notes-medical"></i> Additional Notes (Optional)
+                            </label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3" 
+                                placeholder="Any additional notes, follow-up instructions, or recommendations..."></textarea>
+                            <small class="text-muted">Include any follow-up instructions, lifestyle recommendations, or other relevant information.</small>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i> <strong>Important:</strong> 
+                            Once submitted, this medical report will be permanently saved and the appointment will be marked as completed.
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save"></i> Save Medical Report
+                            </button>
+                            <a href="{{ url_for('doctor_appointments') }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Form validation
+document.getElementById('medicalRecordForm').addEventListener('submit', function(e) {
+    const diagnosis = document.getElementById('diagnosis').value.trim();
+    const prescription = document.getElementById('prescription').value.trim();
+    
+    if (!diagnosis || !prescription) {
+        e.preventDefault();
+        alert('Please fill in both diagnosis and prescription fields.');
+        return false;
+    }
+    
+    if (diagnosis.length < 10) {
+        e.preventDefault();
+        alert('Diagnosis should be more detailed (at least 10 characters).');
+        return false;
+    }
+    
+    if (prescription.length < 10) {
+        e.preventDefault();
+        alert('Prescription should be more detailed (at least 10 characters).');
+        return false;
+    }
+    
+    return confirm('Are you sure you want to save this medical report? The appointment will be marked as completed.');
+});
+
+// Character counter for textareas
+const textareas = document.querySelectorAll('textarea');
+textareas.forEach(textarea => {
+    const maxLength = textarea.getAttribute('maxlength');
+    if (maxLength) {
+        const counter = document.createElement('small');
+        counter.className = 'text-muted float-end';
+        textarea.parentElement.appendChild(counter);
+        
+        textarea.addEventListener('input', function() {
+            counter.textContent = `${this.value.length} / ${maxLength} characters`;
+        });
+        
+        counter.textContent = `0 / ${maxLength} characters`;
+    }
+});
+</script>
+
+<style>
+.card {
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem;
+}
+
+textarea.form-control {
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+    transition: border-color 0.3s;
+}
+
+textarea.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.alert {
+    border-radius: 8px;
+}
+
+.btn-lg {
+    padding: 12px 24px;
+    font-size: 1.1rem;
+    border-radius: 8px;
+}
+</style>
+{% endblock %}
