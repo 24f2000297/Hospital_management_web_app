@@ -11,7 +11,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///hospital_management.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
-# Initialize database
+# Initializ database
 with app.app_context():
     db.create_all()
     # Create admin user if it doesn't exist
