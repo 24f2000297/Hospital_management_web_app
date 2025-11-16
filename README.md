@@ -844,8 +844,6 @@ Developed as part of hospital management system project.
 
 ---
 
-**Last Updated**: November 16, 2025
-
 **Project Status**: ✅ Active Development
 
 ---
