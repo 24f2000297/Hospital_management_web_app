@@ -4,14 +4,15 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User, Patient, Doctor, Department, Appointment, MedicalRecord
 from forms import LoginForm, RegistrationForm, AppointmentForm
 from datetime import datetime, timedelta
+import os
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your_secret_key'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///hospital_management.db'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your_secret_key_change_in_production')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///hospital_management.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
-# Initializ database
+# Initialize database
 with app.app_context():
     db.create_all()
     # Create admin user if it doesn't exist
@@ -763,6 +764,5 @@ def logout():
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
+    init_db()
     app.run(debug=True)
